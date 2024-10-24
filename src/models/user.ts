@@ -3,24 +3,38 @@ import mongoose, { Schema } from "mongoose";
 const USER_SCHEMA = new mongoose.Schema({
   username: {
     type: String,
-    required: true
+    required: true,
+  },
+  image: {
+    type: String,
   },
   email: {
     type: String,
-    required: true
+    required: true,
   },
   phone: {
     type: Number,
-    required: true
+    required: true,
   },
   password: {
     type: String,
-    required: true
+    required: true,
   },
   createdOn: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model("User", USER_SCHEMA);
+USER_SCHEMA.methods.toJSON = function () {
+  const user = this;
+  const userObject = user.toObject();
+
+  delete userObject.password;
+
+  return userObject;
+};
+
+const User = mongoose.model("User", USER_SCHEMA);
+
+export default User;

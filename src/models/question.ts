@@ -3,29 +3,36 @@ import mongoose from "mongoose";
 const OPTION_SCHEMA = new mongoose.Schema({
   option: {
     type: String,
-    required: true
+    required: true,
+  },
+
+  imageUrl: {
+    type: String,
   },
 });
 
 export const QUESTION_SCHEMA = new mongoose.Schema({
   _id: { type: mongoose.Schema.Types.ObjectId, auto: false },
   question: {
-    type: String
+    type: String,
   },
   questionType: {
-    type: String
+    type: String,
   },
   options: [OPTION_SCHEMA],
   open: {
     type: Boolean,
   },
   required: {
-    type: Boolean
+    type: Boolean,
   },
   answer: {
-    type: Boolean
+    type: Boolean,
   },
   points: {
-    type: Number
-  }
+    type: Number,
+  },
+  imageUrl: {
+    type: String,
+  },
 });

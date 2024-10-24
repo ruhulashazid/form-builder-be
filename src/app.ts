@@ -1,12 +1,19 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import questionsRouter from './routes/google-document';
-import userRouter from './routes/user';
-import userResponseRouter from './routes/user-response';
-import { corsConfig, REQUEST_FAILURE_MESSAGES, REQUEST_SUCCESS_MESSAGE, SECRET_KEY, SOCKET_EVENTS } from './common/constants';
+import express from "express";
+import bodyParser from "body-parser";
+import questionsRouter from "./routes/google-document";
+import userRouter from "./routes/user";
+import userResponseRouter from "./routes/user-response";
+import commonRouter from "./routes/common";
+import {
+  corsConfig,
+  REQUEST_FAILURE_MESSAGES,
+  REQUEST_SUCCESS_MESSAGE,
+  SECRET_KEY,
+  SOCKET_EVENTS,
+} from "./common/constants";
 import cors from "cors";
-import mongoose from 'mongoose';
-import { logger } from './common/pino';
+import mongoose from "mongoose";
+import { logger } from "./common/pino";
 import jwt from "jsonwebtoken";
 
 const AUTHORISATION = "Authorization";
@@ -16,7 +23,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(corsConfig));
 
-// for user authentication 
+// for user authentication
 app.use((req: any, res: any, next: any) => {
   const authHeader = req.get(AUTHORISATION);
   if (!authHeader) {
@@ -49,15 +56,19 @@ app.use(questionsRouter);
 
 //collecting user responses
 app.use(userResponseRouter);
+app.use(commonRouter);
 
-mongoose.connect("mongodb+srv://chat-app:JdtoiO7C157dO4Fv@cluster0.peixl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+mongoose
+  .connect(
+    "mongodb+srv://chat-app:JdtoiO7C157dO4Fv@cluster0.peixl.mongodb.net/form-builder?retryWrites=true&w=majority&appName=Cluster0"
+  )
   .then(() => {
     logger.info(REQUEST_SUCCESS_MESSAGE.DATABASE_CONNECTED_SUCCESSFULLY);
     const server = app.listen(process.env.PORT || 9000, () => {
       logger.info(REQUEST_SUCCESS_MESSAGE.APP_STARTED);
     });
 
-    const io = require('./common/Socket').init(server);
+    const io = require("./common/Socket").init(server);
     io.on(SOCKET_EVENTS.CONNECTION, (socket: any) => {
       logger.info(SOCKET_CONNECTED, socket.id);
     });

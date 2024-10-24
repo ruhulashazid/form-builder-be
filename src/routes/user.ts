@@ -1,6 +1,12 @@
-import express from 'express';
-import { getUserByIdController, signInUserController, signUpUserController } from '../controllers/user';
-import { API_REQUEST_ROUTES } from '../common/constants';
+import express from "express";
+import {
+  getUserByIdController,
+  signInUserController,
+  signUpUserController,
+  updateUserProfile,
+} from "../controllers/user";
+import { uploader } from "../common/multer";
+import { API_REQUEST_ROUTES } from "../common/constants";
 
 const router = express.Router();
 
@@ -12,5 +18,11 @@ router.post(API_REQUEST_ROUTES.USER_LOGIN, signInUserController);
 
 // create new user
 router.post(API_REQUEST_ROUTES.USER_REGISTER, signUpUserController);
+
+router.put(
+  API_REQUEST_ROUTES.PROFILE,
+  uploader.single("avatar"),
+  updateUserProfile
+);
 
 export default router;
