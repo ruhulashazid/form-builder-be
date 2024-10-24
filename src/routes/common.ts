@@ -9,7 +9,7 @@ router.post(
   "/upload",
   uploader.single("image"),
   async function (req: any, res: any) {
-    const image = req.file as Express.Multer.File | null;
+    const image = req.file as any | null;
 
     if (!image) {
       return res.status(422).json({
