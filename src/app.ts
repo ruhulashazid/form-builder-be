@@ -45,7 +45,8 @@ app.use((req: any, res: any, next: any) => {
   }
   req.userId = decodedToken.userId;
   req.isUserAuth = true;
-  next();
+  req.userRole = decodedToken.role;
+  return next();
 });
 
 // routes for user

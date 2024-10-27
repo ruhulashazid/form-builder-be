@@ -63,6 +63,7 @@ export const enum API_REQUEST_ROUTES {
   SAVE_USER_RESPONSE = "/user-response/:documentId",
   GET_USER_RESPONSE_BY_USER_ID = "/user-response/:userId/:documentId",
   PROFILE = "/profile",
+  DELETE_PROFILE = "/profile/:userId",
 }
 
 export const UNAUTHORIZED_ACCESS = "Unauthorised resource access..!";

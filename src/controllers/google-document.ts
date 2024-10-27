@@ -4,7 +4,7 @@ import {
   UNAUTHORIZED_ACCESS,
 } from "../common/constants";
 import { logger } from "../common/pino";
-const Document = require("../models/google-document");
+import Document from "../models/google-document";
 
 let mongoose = require("mongoose");
 // retreives one the document
@@ -32,13 +32,17 @@ export const getGoogleDocumentByIdController = (req: any, res: any) => {
 // retreives all the documents data
 export const getAllDocumentIds = (req: any, res: any) => {
   if (!req?.isUserAuth) {
-    res.status(401).send({ message: UNAUTHORIZED_ACCESS });
+    return res.status(401).send({ message: UNAUTHORIZED_ACCESS });
   }
-  req.body.userId = new mongoose.Types.ObjectId(req.body.userId);
-  Document.find(
-    { createdByUserID: req.body.userId },
-    { documentName: true, _id: true, createdOn: true, updatedOn: true }
-  )
+  const userRole = req.userRole;
+  const userObjectId = new mongoose.Types.ObjectId(req.body.userId);
+
+  Document.find(userRole === "admin" ? {} : { createdByUserID: userObjectId }, {
+    documentName: true,
+    _id: true,
+    createdOn: true,
+    updatedOn: true,
+  })
     .then((response: any) => {
       res.status(200).send({
         documents: response,
@@ -94,7 +98,7 @@ export const createNewDocument = (req: any, res: any) => {
 // update the document
 export const updateDocument = (req: any, res: any) => {
   if (!req?.isUserAuth) {
-    res.status(401).send({ message: UNAUTHORIZED_ACCESS });
+    return res.status(401).send({ message: UNAUTHORIZED_ACCESS });
   }
 
   console.dir(req.body.questions, {
@@ -117,12 +121,10 @@ export const updateDocument = (req: any, res: any) => {
         REQUEST_SUCCESS_MESSAGE.DOCUMENT_UPDATED_SUCCESSFULLY,
         req.body._id
       );
-      res
-        .status(200)
-        .send({
-          code: 200,
-          message: REQUEST_SUCCESS_MESSAGE.DOCUMENT_UPDATED_SUCCESSFULLY,
-        });
+      res.status(200).send({
+        code: 200,
+        message: REQUEST_SUCCESS_MESSAGE.DOCUMENT_UPDATED_SUCCESSFULLY,
+      });
     })
     .catch((error: any) => {
       logger.error(
@@ -146,12 +148,10 @@ export const deleteDocument = (req: any, res: any) => {
         REQUEST_SUCCESS_MESSAGE.DOCUMENT_DELETED_SUCCESSFULLY,
         req.body._id
       );
-      res
-        .status(200)
-        .json({
-          msg: REQUEST_SUCCESS_MESSAGE.DOCUMENT_DELETED_SUCCESSFULLY,
-          documentId,
-        });
+      res.status(200).json({
+        msg: REQUEST_SUCCESS_MESSAGE.DOCUMENT_DELETED_SUCCESSFULLY,
+        documentId,
+      });
     })
     .catch((error: any) => {
       logger.error(

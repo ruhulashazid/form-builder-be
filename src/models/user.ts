@@ -24,6 +24,9 @@ const USER_SCHEMA = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  role: {
+    type: String,
+  },
 });
 
 USER_SCHEMA.methods.toJSON = function () {

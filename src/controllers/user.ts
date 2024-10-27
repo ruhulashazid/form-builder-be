@@ -11,6 +11,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import fs from "node:fs/promises";
 import cloudinary from "../common/Cloudinary";
+import mongoose from "mongoose";
 
 const LOGGED_IN = "Logged In";
 const ONE_DAY = "1d";
@@ -75,6 +76,58 @@ export const getUserByIdController = (req: Request, res: Response) => {
     });
 };
 
+export const getUserList = async (
+  req: Request & Record<string, any>,
+  res: Response
+) => {
+  if (!req?.isUserAuth) {
+    return res.status(401).send({ message: UNAUTHORIZED_ACCESS });
+  }
+
+  if (req.userRole !== "admin") {
+    return res.status(403).send({ message: UNAUTHORIZED_ACCESS });
+  }
+
+  try {
+    const users = await Users.find({
+      _id: { $ne: req.userId },
+    }).exec();
+
+    return res.json({
+      users: users.map((u) => u.toJSON()),
+    });
+  } catch (error) {
+    console.log("err", (error as Error).stack);
+    return res.json({
+      users: [],
+    });
+  }
+};
+
+export const deleteProfileController = async (
+  req: Request & Record<string, any>,
+  res: Response
+) => {
+  if (!req?.isUserAuth) {
+    return res.status(401).send({ message: UNAUTHORIZED_ACCESS });
+  }
+
+  const userId = req.params.userId;
+
+  try {
+    const result = await Users.findByIdAndDelete(userId).exec();
+
+    return res.json({
+      message: "Profile deleted successfully",
+      user: result,
+    });
+  } catch (error) {
+    return res.json({
+      message: (error as any).message,
+    });
+  }
+};
+
 export const signUpUserController = (req: Request, res: Response) => {
   try {
     let user = new Users(req.body);
@@ -95,6 +148,7 @@ export const signUpUserController = (req: Request, res: Response) => {
                 email: response.email,
                 username: response.username,
                 userId: response.id,
+                role: response.role,
               },
               SECRET_KEY,
               { expiresIn: ONE_DAY }
@@ -113,6 +167,8 @@ export const signUpUserController = (req: Request, res: Response) => {
                 email: response.email,
                 username: response.username,
                 userId: response.id,
+                phone: response.phone,
+                role: response.role,
               },
             });
           });
@@ -145,7 +201,7 @@ export const signInUserController = (req: Request, res: Response) => {
           .status(403)
           .send({ message: REQUEST_FAILURE_MESSAGES.USER_DATA_NOT_FOUND });
       } else {
-        const { email, username, _id, image, phone } = user[0];
+        const { email, username, _id, image, phone, role } = user[0];
         bcrypt
           .compare(password, user[0].password)
           .then((isMatched: boolean) => {
@@ -161,6 +217,7 @@ export const signInUserController = (req: Request, res: Response) => {
                   email,
                   username,
                   userId: _id.toString(),
+                  role,
                 },
                 SECRET_KEY,
                 { expiresIn: ONE_DAY }
@@ -173,6 +230,7 @@ export const signInUserController = (req: Request, res: Response) => {
                 message: LOGGED_IN,
                 token: token,
                 data: {
+                  role,
                   image,
                   phone,
                   email,
